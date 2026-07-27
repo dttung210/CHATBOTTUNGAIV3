@@ -1,0 +1,8 @@
+{
+  "name": "Thầy Tùng AI – Trợ lý học Toán",
+  "description": "Trợ lý học Toán thông minh giúp học sinh học từng bước, gợi ý đúng lúc và cung cấp lời giải chuẩn thi.",
+  "requestFramePermissions": [
+    "camera"
+  ],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
