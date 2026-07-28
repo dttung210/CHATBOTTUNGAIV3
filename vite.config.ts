@@ -7,8 +7,6 @@ export default defineConfig(() => {
   return {
     plugins: [react(), tailwindcss()],
 
-    // Không dùng thư mục public làm nguồn đầu vào,
-    // vì Vite sẽ build kết quả trực tiếp vào public.
     publicDir: false,
 
     build: {
