@@ -1,5 +1,35 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "buildCommand": "npm run build",
-  "outputDirectory": "dist"
+  "outputDirectory": "dist",
+  "rewrites": [
+    {
+      "source": "/api/analyze-problem",
+      "destination": "/api/health?target=analyze-problem"
+    },
+    {
+      "source": "/api/generate-response",
+      "destination": "/api/health?target=generate-response"
+    },
+    {
+      "source": "/api/explain-hint",
+      "destination": "/api/health?target=explain-hint"
+    },
+    {
+      "source": "/api/check-step",
+      "destination": "/api/health?target=check-step"
+    },
+    {
+      "source": "/api/generate-similar",
+      "destination": "/api/health?target=generate-similar"
+    },
+    {
+      "source": "/api/summarize-session",
+      "destination": "/api/health?target=summarize-session"
+    },
+    {
+      "source": "/api/generate-geometry-spec",
+      "destination": "/api/health?target=generate-geometry-spec"
+    }
+  ]
 }
