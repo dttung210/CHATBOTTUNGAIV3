@@ -1,47 +1,49 @@
-import { GoogleGenAI } from "@google/genai";
+import app from "../server";
 
-export default async function handler(_req: any, res: any) {
+export default function handler(req: any, res: any) {
   try {
-    const apiKey = process.env.GEMINI_API_KEY;
+    const currentUrl = new URL(
+      req.url || "/api/health",
+      "http://localhost"
+    );
 
-    if (!apiKey) {
-      return res.status(500).json({
+    const target = currentUrl.searchParams.get("target");
+
+    // Khi mở trực tiếp /api/health
+    if (!target) {
+      req.url = "/api/health";
+      return app(req, res);
+    }
+
+    // Khi một API khác được Vercel chuyển đến health.ts
+    const allowedTargets = [
+      "analyze-problem",
+      "generate-response",
+      "explain-hint",
+      "check-step",
+      "generate-similar",
+      "summarize-session",
+      "generate-geometry-spec",
+    ];
+
+    if (!allowedTargets.includes(target)) {
+      return res.status(404).json({
         ok: false,
-        stage: "environment",
-        error: "Không tìm thấy GEMINI_API_KEY trên Vercel",
+        error: "API không tồn tại",
+        target,
       });
     }
 
-    const ai = new GoogleGenAI({
-      apiKey,
-    });
+    // Chuyển lại đúng đường dẫn để Express trong server.ts xử lý
+    req.url = `/api/${target}`;
 
-    const response = await ai.models.generateContent({
-      model: "gemini-2.5-flash",
-      contents:
-        "Chỉ trả lời đúng câu này: Kết nối Gemini thành công.",
-    });
-
-    return res.status(200).json({
-      ok: true,
-      service: "Thầy Tùng AI API",
-      geminiKeyConfigured: true,
-      model: "gemini-2.5-flash",
-      result: response.text,
-      environment: process.env.VERCEL_ENV || "unknown",
-    });
+    return app(req, res);
   } catch (error: any) {
-    console.error("GEMINI_TEST_ERROR:", error);
+    console.error("API_GATEWAY_ERROR:", error);
 
     return res.status(500).json({
       ok: false,
-      service: "Thầy Tùng AI API",
-      geminiKeyConfigured: Boolean(process.env.GEMINI_API_KEY),
-      errorName: error?.name || null,
-      errorMessage: error?.message || String(error),
-      errorCode: error?.code || null,
-      errorStatus: error?.status || null,
-      environment: process.env.VERCEL_ENV || "unknown",
+      error: error?.message || "Lỗi cổng API",
     });
   }
 }
