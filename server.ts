@@ -783,26 +783,35 @@ app.post("/api/generate-geometry-spec", async (req, res) => {
   }
 });
 
-// Vite Integration
-async function startServer() {
-  if (process.env.NODE_ENV !== "production") {
+// Xuất Express app để Vercel chạy dưới dạng Function.
+export default app;
+
+// Chỉ tự mở server khi chạy trên máy tính.
+// Khi triển khai, Vercel sẽ tự khởi động Express app.
+if (!process.env.VERCEL) {
+  async function startLocalServer() {
     const { createServer: createViteServer } = await import("vite");
+
     const vite = await createViteServer({
-      server: { middlewareMode: true },
+      server: {
+        middlewareMode: true,
+      },
       appType: "spa",
     });
+
     app.use(vite.middlewares);
-  } else {
-    const distPath = path.join(process.cwd(), "dist");
-    app.use(express.static(distPath));
-    app.get("*", (req, res) => {
-      res.sendFile(path.join(distPath, "index.html"));
+
+    const port = Number(process.env.PORT || 3000);
+
+    app.listen(port, "0.0.0.0", () => {
+      console.log(
+        `[Thầy Tùng AI Server] Server running on http://localhost:${port}`
+      );
     });
   }
 
-  app.listen(PORT, "0.0.0.0", () => {
-    console.log(`[Thầy Tùng AI Server] Server running on http://0.0.0.0:${PORT}`);
+  startLocalServer().catch((error) => {
+    console.error("Không thể khởi động máy chủ:", error);
+    process.exit(1);
   });
 }
-
-startServer();
