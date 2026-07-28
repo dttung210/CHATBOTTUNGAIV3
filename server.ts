@@ -817,3 +817,13 @@ if (!process.env.VERCEL) {
     process.exit(1);
   });
 }
+app.get("/api/health", (_req, res) => {
+  return res.status(200).json({
+    ok: true,
+    service: "Thầy Tùng AI API",
+    geminiKeyConfigured: Boolean(process.env.GEMINI_API_KEY),
+    environment: process.env.VERCEL_ENV || "production",
+  });
+});
+
+export default app;
