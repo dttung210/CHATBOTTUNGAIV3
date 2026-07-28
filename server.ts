@@ -1,12 +1,11 @@
 import express from "express";
-import path from "path";
 import { GoogleGenAI, Type } from "@google/genai";
 import dotenv from "dotenv";
 
 dotenv.config();
 
 const app = express();
-const PORT = 3000;
+const PORT = Number(process.env.PORT || 3000);
 
 app.use(express.json({ limit: "25mb" }));
 app.use(express.urlencoded({ extended: true, limit: "25mb" }));
@@ -41,12 +40,10 @@ async function generateContentWithRetry(
   }
 ) {
   const modelsToTry = [
-    "gemini-3.1-flash-lite",
-    options.model || "gemini-3.1-flash-lite",
+    options.model || "gemini-2.5-flash",
     "gemini-2.5-flash",
-    "gemini-flash-latest",
-    "gemini-3.6-flash",
-    "gemini-3.5-flash",
+    "gemini-2.5-flash-lite",
+    "gemini-3.5-flash-lite",
   ];
   
   const uniqueModels = Array.from(new Set(modelsToTry.filter(Boolean)));
@@ -783,29 +780,34 @@ app.post("/api/generate-geometry-spec", async (req, res) => {
   }
 });
 
-// Xuất Express app để Vercel chạy dưới dạng Function.
+// Route kiểm tra nhanh backend và biến môi trường.
+app.get("/api/health", (_req, res) => {
+  return res.status(200).json({
+    ok: true,
+    service: "Thầy Tùng AI API",
+    geminiKeyConfigured: Boolean(process.env.GEMINI_API_KEY),
+  });
+});
+
+// Vercel sẽ nhận Express app này và chạy dưới dạng Function.
 export default app;
 
-// Chỉ tự mở server khi chạy trên máy tính.
-// Khi triển khai, Vercel sẽ tự khởi động Express app.
+// Chỉ mở cổng khi chạy trên máy tính bằng lệnh npm run dev.
+// Trên Vercel tuyệt đối không gọi app.listen().
 if (!process.env.VERCEL) {
   async function startLocalServer() {
     const { createServer: createViteServer } = await import("vite");
 
     const vite = await createViteServer({
-      server: {
-        middlewareMode: true,
-      },
+      server: { middlewareMode: true },
       appType: "spa",
     });
 
     app.use(vite.middlewares);
 
-    const port = Number(process.env.PORT || 3000);
-
-    app.listen(port, "0.0.0.0", () => {
+    app.listen(PORT, "0.0.0.0", () => {
       console.log(
-        `[Thầy Tùng AI Server] Server running on http://localhost:${port}`
+        `[Thầy Tùng AI Server] Server running on http://localhost:${PORT}`
       );
     });
   }
